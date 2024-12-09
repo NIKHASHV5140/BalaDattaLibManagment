@@ -1,0 +1,135 @@
+<?php include 'header.php'; ?>
+<div class="container" style="display: flex; flex: 1; padding-top: 1rem;">
+  <?php include 'leftpanel.php'; ?>
+
+  <!-- Main Content Area -->
+  <div class="main-content" style="flex: 1; padding: 1rem; background-color: #ffffff; margin-left: 1rem; border-radius: 8px; box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);">
+    <h2 style="text-align: center; margin-bottom: 1.5rem; color: #333;">Checked in Book Transactions</h2>
+
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+      }
+
+      table th, table td {
+        text-align: center;
+        padding: 12px;
+        border: 1px solid #ddd;
+      }
+
+      table th {
+        background-color: #f4f4f4;
+        color: #333;
+        font-weight: bold;
+      }
+
+      table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      table tr:hover {
+        background-color: #f1f1f1;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 1rem;
+        background-color: #fff0f0;
+        color: #cc0000;
+        border: 1px solid #f5c2c2;
+        border-radius: 4px;
+      }
+
+      .main-content {
+        font-family: Arial, sans-serif;
+        color: #555;
+      }
+
+    </style>
+
+    <?php
+    // Database connection
+    $conn = new mysqli("localhost", "root", "", "lms");
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Query to fetch details from book_trans, books, and students tables
+    $sql = "SELECT 
+                s.first_name, 
+                s.last_name, 
+                s.grade,
+                s.email, 
+                b.book_name, 
+                bt.checkout_ts, 
+                bt.status,
+                bt.student_id
+            FROM 
+                book_trans bt
+            JOIN 
+                book b ON bt.book_id = b.book_id
+            JOIN 
+                students s ON bt.student_id = s.student_id and s.grade
+            WHERE 
+                bt.status = 'Closed'";
+
+    $result = $conn->query($sql);
+
+    // Check if any open transactions are found
+    if ($result->num_rows > 0) {
+        echo "<table>
+                <tr>
+                    <th>Student Id</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Grade</th>
+                    <th>Email</th>
+                    <th>Book Name</th>
+                    <th>Checkout Date</th>
+                    <th>Status</th>
+                </tr>";
+
+        // Loop through and display each record
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr>
+                    <td>" . htmlspecialchars($row['student_id']) . "</td>
+                    <td>" . htmlspecialchars($row['first_name']) . "</td>
+                    <td>" . htmlspecialchars($row['last_name']) . "</td>
+                    <td>" . htmlspecialchars($row['grade']) . "</td>
+                    <td>" . htmlspecialchars($row['email']) . "</td>
+                    <td>" . htmlspecialchars($row['book_name']) . "</td>
+                    <td>" . htmlspecialchars($row['checkout_ts']) . "</td>
+                    <td>" . htmlspecialchars($row['status']) . "</td>
+                  </tr>";
+        }
+        echo "</table>";
+    } else {
+        echo "<div class='no-data'>No open transactions found.</div>";
+    }
+
+    // Close the database connection
+    $conn->close();
+    ?>
+  </div>
+</div>
+<?php include 'footer.php'; ?>
+<div class="tabs">
+  <div class="tab" onclick="openTab('tab1')">Tab 1</div>
+  <div class="tab" onclick="openTab('tab2')">Tab 2</div>
+</div>
+
+<div id="tab1" class="tab-content">
+  <h2>Tab 1 Content</h2>
+  <p>This is the content of Tab 1</p>
+</div>
+
+<div id="tab2" class="tab-content" style="display: none;">
+  <h2>Tab 2 Content</h2>
+  <p>This is the content of Tab 2</p>
+</div>
+    
